@@ -1,10 +1,10 @@
-package br.speck.valuewallet.api.application.service;
+package br.speck.valuewallet.api.transactions.get.application.service;
 
-import br.speck.valuewallet.api.adapter.repository.TransactionRepository;
-import br.speck.valuewallet.api.application.dto.GetTransactionDetailsDto;
-import br.speck.valuewallet.api.application.dto.TransactionDetailsResponseDto;
-import br.speck.valuewallet.api.domain.entity.mongodb.TransactionEntity;
-import br.speck.valuewallet.api.domain.enums.OperationType;
+import br.speck.valuewallet.api.transactions.get.adapter.repository.TransactionRepository;
+import br.speck.valuewallet.api.transactions.get.application.dto.GetTransactionDetailsDTO;
+import br.speck.valuewallet.api.transactions.get.application.dto.TransactionDetailsResponseDTO;
+import br.speck.valuewallet.api.transactions.get.domain.entity.mongodb.TransactionEntity;
+import br.speck.valuewallet.api.transactions.get.domain.enums.OperationType;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
@@ -45,7 +45,7 @@ public class GetDetailsTransactionServiceTest {
                 List.of("alimentação", "limpeza")
         );
 
-        TransactionDetailsResponseDto expected = new TransactionDetailsResponseDto(
+        TransactionDetailsResponseDTO expected = new TransactionDetailsResponseDTO(
                 entityMock
         );
 
@@ -53,7 +53,7 @@ public class GetDetailsTransactionServiceTest {
         when(repository.findById(any())).thenReturn(Optional.of(entityMock));
 
         // Act
-        TransactionDetailsResponseDto actual = sut.execute(new GetTransactionDetailsDto("any_id"));
+        TransactionDetailsResponseDTO actual = sut.execute(new GetTransactionDetailsDTO("any_id"));
 
         // Capturar parametro
         ArgumentCaptor<String> captor = ArgumentCaptor.forClass(String.class);
@@ -67,7 +67,7 @@ public class GetDetailsTransactionServiceTest {
 
     @Test
     public void getDetailsShouldThrowsClassNotFoundException() {
-        GetTransactionDetailsDto paramsDTO = new GetTransactionDetailsDto("fake_id");
+        GetTransactionDetailsDTO paramsDTO = new GetTransactionDetailsDTO("fake_id");
 
         when(repository.findById(paramsDTO.id())).thenReturn(Optional.empty());
 
