@@ -52,14 +52,15 @@ public class HttpTriggerJava extends AbstractHttpTriggerJava{
             )
             HttpRequestMessage<Optional<String>> request,
             @BindingName("id") String id,
-            final ExecutionContext context) throws ClassNotFoundException {
+            final ExecutionContext context) {
 
-        this.logHttpRequest(request, context, RouteTemplates.GET_DETAILS_TRANSACTIONS_ROUTE);
-
-        GetDetailsTransactionService service = SpringBootFunctionConfig.getBean(GetDetailsTransactionService.class);
-        TransactionDetailsResponseDTO transactionDetails = service.execute(new GetTransactionDetailsDTO(id));
-
-        return this.printSuccess(request, HttpStatus.OK, transactionDetails);
+        return executeSafely(
+                request,
+                RouteTemplates.GET_DETAILS_TRANSACTIONS_ROUTE,
+                context,
+                GetDetailsTransactionService.class,
+                () -> new GetTransactionDetailsDTO(id)
+        );
     }
 
 }
