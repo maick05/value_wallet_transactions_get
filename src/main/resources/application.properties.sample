@@ -1,0 +1,7 @@
+spring.application.name=transactions
+#KEYVAULT
+spring.cloud.azure.keyvault.secret.endpoint=
+spring.cloud.azure.credential.client-id=
+spring.cloud.azure.credential.client-secret=
+spring.cloud.azure.credential.tenant-id=
+spring.cloud.azure.credential.authentication-mode=
