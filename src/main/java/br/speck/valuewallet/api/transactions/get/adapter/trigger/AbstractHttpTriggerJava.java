@@ -1,11 +1,13 @@
 package br.speck.valuewallet.api.transactions.get.adapter.trigger;
 
+import br.speck.valuewallet.api.transactions.get.SpringBootFunctionConfig;
 import br.speck.valuewallet.api.transactions.get.adapter.exception.AbstractHttpException;
 import br.speck.valuewallet.api.transactions.get.adapter.exception.InvalidPaginationHttpException;
 import br.speck.valuewallet.api.transactions.get.application.constants.AppConstants;
 import br.speck.valuewallet.api.transactions.get.application.constants.ErrorCodes;
 import br.speck.valuewallet.api.transactions.get.application.dto.ErrorResponseDTO;
 import br.speck.valuewallet.api.transactions.get.application.helper.DTOValidationHelper;
+import br.speck.valuewallet.api.transactions.get.application.service.CommandService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.microsoft.azure.functions.ExecutionContext;
@@ -22,6 +24,7 @@ import java.util.*;
 /**
  * Abstract Azure Functions with HTTP Trigger.
  */
+@SuppressWarnings("rawtypes")
 public abstract class AbstractHttpTriggerJava {
     protected final DTOValidationHelper dtoValidator = new DTOValidationHelper();
 
@@ -36,23 +39,23 @@ public abstract class AbstractHttpTriggerJava {
 
         var pathParams = this.extractPathParameters(routeTemplate, requestUri);
         if (!pathParams.isEmpty()) {
-            logBuilder.append("Path Parameters: ").append(pathParams.toString()).append("\n");
+            logBuilder.append("Path Parameters: ").append(pathParams).append("\n");
         }
 
         Map<String, String> queryParams = request.getQueryParameters();
         if (queryParams != null && !queryParams.isEmpty()) {
-            logBuilder.append("Query Parameters: ").append(queryParams.toString()).append("\n");
+            logBuilder.append("Query Parameters: ").append(queryParams).append("\n");
         }
 
         Optional<?> bodyOptional = (Optional<?>) request.getBody();
         if (bodyOptional.isPresent()) {
             Object body = bodyOptional.get();
-            logBuilder.append("Body: ").append(body.toString()).append("\n");
+            logBuilder.append("Body: ").append(body).append("\n");
         }
 
         Map<String, String> headers = request.getHeaders();
         if (headers != null && !headers.isEmpty()) {
-            logBuilder.append("Headers: ").append(headers.toString()).append("\n");
+            logBuilder.append("Headers: ").append(headers).append("\n");
         }
 
         // Registra a mensagem de log
@@ -109,9 +112,16 @@ public abstract class AbstractHttpTriggerJava {
         }
     }
 
-    protected HttpResponseMessage executeSafely(HttpRequestMessage<?> request, ThrowingSupplier<HttpResponseMessage> action) {
+    protected <T> HttpResponseMessage executeSafely(
+            HttpRequestMessage<?> request,
+            String route, ExecutionContext context,
+            Class serviceClass,
+            ThrowingSupplier paramsDTO
+    ) {
         try {
-            return action.get();
+            this.logHttpRequest(request, context, route);
+            CommandService service = (CommandService) SpringBootFunctionConfig.getBean(serviceClass);
+            return this.printSuccess(request, HttpStatus.OK, service.execute(paramsDTO.get()));
         } catch (Exception error) {
             System.out.println("Error: " + error);
             return this.printError(request, error);

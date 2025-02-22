@@ -12,7 +12,6 @@ import com.microsoft.azure.functions.annotation.AuthorizationLevel;
 import com.microsoft.azure.functions.annotation.BindingName;
 import com.microsoft.azure.functions.annotation.FunctionName;
 import com.microsoft.azure.functions.annotation.HttpTrigger;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Component;
 
 import java.util.Optional;
@@ -32,16 +31,15 @@ public class HttpTriggerJava extends AbstractHttpTriggerJava{
     public HttpResponseMessage list(
             @HttpTrigger(name = "req", methods = {HttpMethod.GET}, authLevel = AuthorizationLevel.FUNCTION, route = RouteTemplates.LIST_TRANSACTIONS_ROUTE)
             HttpRequestMessage<Optional<String>> request,
-            final ExecutionContext context) {
-
-        return executeSafely(request, () -> {
-            this.logHttpRequest(request, context, RouteTemplates.LIST_TRANSACTIONS_ROUTE);
-
-            ListTransactionService service = SpringBootFunctionConfig.getBean(ListTransactionService.class);
-            Page<TransactionDetailsResponseDTO> pageResult = service.execute(new ListTransactionDTO(this.getPageableParams(request)));
-
-            return this.printSuccess(request, HttpStatus.OK, pageResult);
-        });
+            final ExecutionContext context
+    ) {
+        return executeSafely(
+                request,
+                RouteTemplates.LIST_TRANSACTIONS_ROUTE,
+                context,
+                ListTransactionService.class,
+                () -> new ListTransactionDTO(this.getPageableParams(request))
+        );
     }
 
     @FunctionName("getDetails")
